@@ -6,6 +6,9 @@ javascript with nodejs, expressjs, ejs, including middleware like jsonwebtoken t
 
 monogodb with mongoose to fetch and store data like password hashes (bcryptjs)
 
+include ".env" file with
+JWT_SECRET_KEY and URI
+
 twitterer features:
 
 posting text or replying
