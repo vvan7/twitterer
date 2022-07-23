@@ -47,22 +47,20 @@
                 let tweets = result.tweets;
 
 				if(tweets.length > 0) {
-					lasttime = tweets[0].date;
+					lasttime = new Date(tweets[tweets.length - 1].date);
 
-                    for(let i = tweets.length - 1; i >= 0; i--) {
-						const t = tweets[i];
+                    for(let t of tweets) {
 						const whitebod = document.createElement('div');
 						whitebod.className = 'whitebody';
-                        whitebod.innerHTML = '<a class="griditem" href="/user/' + t.author + '">@' + t.author + '</a><a class="griditem" href="/tweet/' + t._id + '">' + t.text + '</a><div class="griditem">Likes: ' + t.likes + ' Replies: ' + t.replies + '</div>';
-
+                        whitebod.innerHTML = '<a class="griditem" href="/user/' + t.author + '">@' + t.author + '</a><a class="griditem" href="/tweet/' + t._id + '">' + t.text + '</a><div class="griditem">Likes: ' + t.likes + ' Replies: ' + t.replies + '</div><div class="griditem" style="font-size:12px">' + lasttime + '</div>';
+                        
 						grid.appendChild(whitebod);
 					}
 				}
 				else if(loadonce) {
 					alert('no more');
 				}
-				console.log(result.tweets);
-				console.log(lasttime);
+                
 				loadonce = true;
             }
             else if(result.status === 'error') {

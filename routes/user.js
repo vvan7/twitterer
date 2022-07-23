@@ -80,7 +80,7 @@ router.post('/:id/tweets', authJwt.authToken, async (req, res) => {
 
 	following.push(req.userid);
 
-	Tweet.find({ author: { $in: following }, date: { $lt: lasttime }, replyto: null }).limit(10).lean().exec(function(error, twt) {
+	Tweet.find({ author: { $in: following }, date: { $lt: lasttime }, replyto: null }).sort({ date: -1 }).limit(10).lean().exec(function(error, twt) {
 		if(error) return res.json({ status: 'error', error: 'Error fetching tweeeet' });
 
 		res.json({ status: 'ok', tweets: twt });

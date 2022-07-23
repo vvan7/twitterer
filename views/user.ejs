@@ -26,7 +26,7 @@
 		</div>
 	</div>
 	<script>
-		const grid = document.getElementById('grid');
+		let grid = document.getElementById('grid');
 
 		if('<%=username%>' === '<%=userid%>') {
 			const form = document.createElement('div');
@@ -89,25 +89,13 @@
 				let tweets = result.tweets;
 
 				if(tweets.length > 0) {
-					lasttime = tweets[0].date;
+					lasttime = new Date(tweets[tweets.length - 1].date);
 
-					for(let i = tweets.length - 1; i >= 0; i--) {
-						const twt = tweets[i];
+                    for(let t of tweets) {
 						const whitebod = document.createElement('div');
 						whitebod.className = 'whitebody';
-
-						const twtuser = document.createElement('a');
-						twtuser.className = 'griditem';
-						twtuser.href = '/user/' + twt.author;
-						twtuser.innerText = '@' + twt.author;
-						whitebod.appendChild(twtuser);
-
-						const twttext = document.createElement('a');
-						twttext.className = 'griditem';
-						twttext.href = '/tweet/' + twt._id;
-						twttext.innerText = twt.text;
-						whitebod.appendChild(twttext);
-
+                        whitebod.innerHTML = '<a class="griditem" href="/user/' + t.author + '">@' + t.author + '</a><a class="griditem" href="/tweet/' + t._id + '">' + t.text + '</a><div class="griditem">Likes: ' + t.likes + ' Replies: ' + t.replies + '</div><div class="griditem" style="font-size:12px">' + lasttime + '</div>';
+                        
 						grid.appendChild(whitebod);
 					}
 				}
@@ -178,6 +166,8 @@
 
 		function seetweets() {
 			tfl.innerHTML = tweetsinnerhtml;
+
+			grid = document.getElementById('grid');
 			
 			load = document.getElementById('loadmore');
 

@@ -17,6 +17,7 @@
 			<a class = "griditem" href="/user/<%=tweet.author%>">@<%=tweet.author%></a>
 			<a class = "griditem" href="/tweet/<%=tweet._id%>"><%=tweet.text%></a>
 			<div class="griditem" id="lks">Likes: <%=tweet.likes%> Replies: <%=tweet.replies%></div>
+			<div class="griditem" style="font-size:12px"><%=new Date(tweet.date)%></div>
 			<div id="bars"></div>
 		</div>
 		<div class="whitebody">
@@ -90,14 +91,13 @@
 				let tweets = result.tweets;
 
 				if(tweets.length > 0) {
-					lasttime = tweets[0].date;
+					lasttime = new Date(tweets[tweets.length - 1].date);
 
-					for(let i = tweets.length - 1; i >= 0; i--) {
-						const t = tweets[i];
+                    for(let t of tweets) {
 						const whitebod = document.createElement('div');
 						whitebod.className = 'whitebody';
-						whitebod.innerHTML = '<a class="griditem" href="/user/' + t.author + '">@' + t.author + '</a><a class="griditem" href="/tweet/' + t._id + '">' + t.text + '</a><div class="griditem">Likes: ' + t.likes + ' Replies: ' + t.replies + '</div>';
-
+                        whitebod.innerHTML = '<a class="griditem" href="/user/' + t.author + '">@' + t.author + '</a><a class="griditem" href="/tweet/' + t._id + '">' + t.text + '</a><div class="griditem">Likes: ' + t.likes + ' Replies: ' + t.replies + '</div><div class="griditem" style="font-size:12px">' + lasttime + '</div>';
+                        
 						grid.appendChild(whitebod);
 					}
 				}

@@ -66,7 +66,7 @@ router.post('/:id/reply', authJwt.authToken, async (req, res) => {
 router.post('/:id/replies', authJwt.authToken, async (req, res) => {
 	const { lasttime } = req.body;
 	
-	Tweet.find({ date: { $lt: lasttime }, replyto: req.tweetid }).limit(10).lean().exec(function(error, twt) {
+	Tweet.find({ date: { $lt: lasttime }, replyto: req.tweetid }).sort({ date: -1 }).limit(10).lean().exec(function(error, twt) {
 		if(error) return res.json({ status: 'error', error: 'Error fetching replies' });
 
 		res.json({ status: 'ok', tweets: twt });
