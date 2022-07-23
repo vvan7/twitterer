@@ -1,5 +1,7 @@
 # twitterer
 
+https://twitterer-app.herokuapp.com/
+
 a twitter inspired clone site using:
 
 javascript with nodejs, expressjs, ejs, including middleware like jsonwebtoken to authenticate users
