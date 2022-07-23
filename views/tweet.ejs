@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<title>Twitterer</title>
+	<link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+    <div class="navbar">
+        <a href="/">Twitterer</a>
+        <a href="/user/<%=username%>">@<%=username%></a>
+        <a href="/login">Logout</a>
+    </div>
+	<div class="grid">
+		<div id="sometweet"></div>
+		<div class="whitebody" id="maintweet">
+			<a class = "griditem" href="/user/<%=tweet.author%>">@<%=tweet.author%></a>
+			<a class = "griditem" href="/tweet/<%=tweet._id%>"><%=tweet.text%></a>
+			<div class="griditem" id="lks">Likes: <%=tweet.likes%> Replies: <%=tweet.replies%></div>
+			<div id="bars"></div>
+		</div>
+		<div class="whitebody">
+			<form id="tweetform">
+				<textarea type="text" autocomplete="off" class="griditem" id="tweettext" placeholder="Tweeeet 1-100 characters"></textarea>
+				<input type="submit" value="Tweeeet" class="griditem"/>
+			</form>
+		</div>
+	</div>
+	<div class="grid" id="tfl" style="margin-top:0px">
+		<div class="grid" id="grid" style="margin-top:0px"></div>
+		<div class="grid" style="margin-top:10px">
+			<button id="loadmore">Load more</button>
+		</div>
+	</div>
+	<script>
+		const form = document.getElementById('tweetform');
+		form.addEventListener('submit', tweeeet);
+
+		async function tweeeet(event) {
+			event.preventDefault();
+			
+			const tweettext = document.getElementById('tweettext').value;
+
+			const result = await fetch('/tweet/<%=tweetid%>/reply', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					tweettext
+				})
+			}).then((res) => res.json());
+			
+			if (result.status === 'ok') {
+				alert('Success');
+
+				window.location.href = window.location.href;
+			}
+			else if(result.status === 'error') {
+				alert(result.error);
+			}
+		}
+
+		const load = document.getElementById('loadmore');
+
+		load.addEventListener("click", fetchreplies);
+
+		let lasttime = new Date();
+
+		let loadonce = false;
+
+		load.dispatchEvent(new Event('click'));
+
+		async function fetchreplies(event) {
+			event.preventDefault();
+
+			const grid = document.getElementById('grid');
+			
+			const result = await fetch('/tweet/<%=tweetid%>/replies', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					lasttime
+				})
+			}).then((res) => res.json());
+			
+			if (result.status === 'ok') {
+				let tweets = result.tweets;
+
+				if(tweets.length > 0) {
+					lasttime = tweets[0].date;
+
+					for(let i = tweets.length - 1; i >= 0; i--) {
+						const t = tweets[i];
+						const whitebod = document.createElement('div');
+						whitebod.className = 'whitebody';
+						whitebod.innerHTML = '<a class="griditem" href="/user/' + t.author + '">@' + t.author + '</a><a class="griditem" href="/tweet/' + t._id + '">' + t.text + '</a><div class="griditem">Likes: ' + t.likes + ' Replies: ' + t.replies + '</div>';
+
+						grid.appendChild(whitebod);
+					}
+				}
+				else if(loadonce) {
+					alert('no more');
+				}
+
+				loadonce = true;
+			}
+			else if(result.status === 'error') {
+				alert(result.error);
+			}
+		}
+
+		const bars = document.getElementById('bars');
+		const likebutton = document.createElement('button');
+		bars.appendChild(likebutton);
+		likebutton.addEventListener('click', setlike);
+
+		let liked = false;
+		likebutton.innerText = 'like';
+		if('<%=liked%>' === 'y') {
+			liked = true;
+			likebutton.innerText = 'unlike';
+		}
+
+		async function setlike(event) {
+			event.preventDefault();
+			
+			const result = await fetch('/tweet/<%=tweetid%>/like', {
+				method: 'POST'
+			}).then((res) => res.json());
+
+			if (result.status === 'ok') {
+				alert('Success');
+
+				lks = document.getElementById('lks');
+				lks.innerText = 'Likes: ' + result.tweet.likes + ' Replies: ' + result.tweet.replies;
+
+				liked = !liked;
+				
+				likebutton.innerText = 'like';
+				if(liked) {
+					likebutton.innerText = 'unlike';
+				}
+			}
+			else if(result.status === 'error') {
+				alert(result.error);
+			}
+		}
+
+		const sometweet = document.getElementById('sometweet');
+		if('<%=sometweet%>' !== '') {
+			sometweet.className = 'whitebody';
+			sometweet.innerHTML = '<a class = "griditem" href="/user/<%=sometweet.author%>">@<%=sometweet.author%></a><a class = "griditem" href="/tweet/<%=sometweet._id%>"><%=sometweet.text%></a><div class="griditem">Likes: <%=sometweet.likes%> Replies: <%=sometweet.replies%></div>';
+		}
+  	</script>
+</body>
+</html>

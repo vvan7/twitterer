@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Twitterer Signup</title>
+	<link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+	<div class="navbar">
+        <a href="/">Twitterer</a>
+        <a href="/login">Login</a>
+    </div>
+	<div class="main">
+  		<h1>Signup</h1>
+		<p>Username / Password</p>
+		<form id="signupform">
+			<input type="text" autocomplete="off" id="username" placeholder="4 to 30 Characters"/>
+			<input type="password" autocomplete="off" id="password" placeholder="4 to 30 Characters"/>
+			<input type="submit" value="Register"/>
+		</form>
+	</div>
+	<script>
+		const form = document.getElementById('signupform');
+		form.addEventListener('submit', signupUser);
+
+		async function signupUser(event) {
+			event.preventDefault();
+			const username = document.getElementById('username').value;
+			const password = document.getElementById('password').value;
+
+			const result = await fetch('/signup/api', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					username,
+					password
+				})
+			}).then((res) => res.json());
+			
+			if (result.status === 'ok') {
+				alert('Success');
+				window.location.href = '/login';
+			}
+			else if(result.status === 'error') {
+				alert(result.error);
+			}
+		}
+  	</script>
+</body>
+</html>

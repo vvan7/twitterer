@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<title>Twitterer</title>
+	<link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+    <div class="navbar">
+        <a href="/">Twitterer</a>
+        <a href="/user/<%=username%>">@<%=username%></a>
+        <a href="/login">Logout</a>
+    </div>
+    <div class="grid" id="tfl">
+		<div class="grid" id="grid" style="margin-top:0px"></div>
+		<div class="grid" style="margin-top:10px">
+			<button id="loadmore">Load more</button>
+		</div>
+	</div>
+    <script>
+        const load = document.getElementById('loadmore');
+
+        load.addEventListener("click", fetchtweeeet);
+
+        let lasttime = new Date();
+
+        let loadonce = false;
+
+        load.dispatchEvent(new Event('click'));
+
+        async function fetchtweeeet(event) {
+            event.preventDefault();
+
+            const grid = document.getElementById('grid');
+            
+            const result = await fetch('/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    lasttime
+                })
+            }).then((res) => res.json());
+            
+            if (result.status === 'ok') {
+                let tweets = result.tweets;
+
+				if(tweets.length > 0) {
+					lasttime = tweets[0].date;
+
+                    for(let i = tweets.length - 1; i >= 0; i--) {
+						const t = tweets[i];
+						const whitebod = document.createElement('div');
+						whitebod.className = 'whitebody';
+                        whitebod.innerHTML = '<a class="griditem" href="/user/' + t.author + '">@' + t.author + '</a><a class="griditem" href="/tweet/' + t._id + '">' + t.text + '</a><div class="griditem">Likes: ' + t.likes + ' Replies: ' + t.replies + '</div>';
+
+						grid.appendChild(whitebod);
+					}
+				}
+				else if(loadonce) {
+					alert('no more');
+				}
+				console.log(result.tweets);
+				console.log(lasttime);
+				loadonce = true;
+            }
+            else if(result.status === 'error') {
+                alert(result.error);
+            }
+        }
+    </script>
+</body>
+</html>

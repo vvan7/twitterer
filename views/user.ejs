@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<title>Twitterer</title>
+	<link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+    <div class="navbar">
+        <a href="/">Twitterer</a>
+        <a href="/user/<%=username%>">@<%=username%></a>
+        <a href="/login">Logout</a>
+    </div>
+	<div class="grid">
+		<div class="whitebody">
+			<div class="griditem" id="profile">
+				<a href="/user/<%=userid%>">@<%=userid%></a>
+			</div>
+			<div id="bars"></div>
+		</div>
+	</div>
+	<div class="grid" id="tfl" style="margin-top:0px">
+		<div class="grid" id="grid" style="margin-top:0px"></div>
+		<div class="grid" style="margin-top:10px">
+			<button id="loadmore">Load more</button>
+		</div>
+	</div>
+	<script>
+		const grid = document.getElementById('grid');
+
+		if('<%=username%>' === '<%=userid%>') {
+			const form = document.createElement('div');
+			form.className = 'whitebody';
+			form.innerHTML = '<form id="tweetform"><textarea type="text" autocomplete="off" class="griditem" id="tweettext" placeholder="Tweeeet 1-100 characters"></textarea><input type="submit" value="Tweeeet" class="griditem"/></form>';
+			grid.appendChild(form);
+			const tweetform = document.getElementById('tweetform');
+			tweetform.addEventListener('submit', tweeeet);
+		}
+
+		async function tweeeet(event) {
+			event.preventDefault();
+			
+			const tweettext = document.getElementById('tweettext').value;
+
+			const result = await fetch('/user/<%=username%>/create', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					tweettext
+				})
+			}).then((res) => res.json());
+			
+			if (result.status === 'ok') {
+				alert('Success');
+
+				window.location.href = window.location.href;
+			}
+			else if(result.status === 'error') {
+				alert(result.error);
+			}
+		}
+
+		let load = document.getElementById('loadmore');
+
+		load.addEventListener('click', fetchtweeeet);
+
+		let lasttime = new Date();
+
+		let loadonce = false;
+
+		load.dispatchEvent(new Event('click'));
+
+        async function fetchtweeeet(event) {
+			event.preventDefault();
+			
+			const result = await fetch('/user/<%=userid%>/tweets', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+                    lasttime
+				})
+			}).then((res) => res.json());
+
+			if (result.status === 'ok') {
+				let tweets = result.tweets;
+
+				if(tweets.length > 0) {
+					lasttime = tweets[0].date;
+
+					for(let i = tweets.length - 1; i >= 0; i--) {
+						const twt = tweets[i];
+						const whitebod = document.createElement('div');
+						whitebod.className = 'whitebody';
+
+						const twtuser = document.createElement('a');
+						twtuser.className = 'griditem';
+						twtuser.href = '/user/' + twt.author;
+						twtuser.innerText = '@' + twt.author;
+						whitebod.appendChild(twtuser);
+
+						const twttext = document.createElement('a');
+						twttext.className = 'griditem';
+						twttext.href = '/tweet/' + twt._id;
+						twttext.innerText = twt.text;
+						whitebod.appendChild(twttext);
+
+						grid.appendChild(whitebod);
+					}
+				}
+				else if(loadonce) {
+					alert('no more');
+				}
+
+				tweetsinnerhtml = tfl.innerHTML;
+
+				loadonce = true;
+			}
+			else if(result.status === 'error') {
+				alert(result.error);
+			}
+		}
+
+		const profile = document.getElementById('profile');
+		const followbutton = document.createElement('button');
+		if('<%=username%>' !== '<%=userid%>') {
+			profile.appendChild(followbutton);
+			followbutton.addEventListener('click', setfollow);
+		}
+
+		let following = false;
+		followbutton.innerText = 'follow';
+		if('<%=following%>' === 'y') {
+			following = true;
+			followbutton.innerText = 'unfollow';
+		}
+
+		async function setfollow(event) {
+			event.preventDefault();
+			
+			const result = await fetch('/user/<%=userid%>/follow', {
+				method: 'POST'
+			}).then((res) => res.json());
+
+			if (result.status === 'ok') {
+				alert('Success');
+
+				following = !following;
+				
+				followbutton.innerText = 'follow';
+				if(following) {
+					followbutton.innerText = 'unfollow';
+				}
+			}
+			else if(result.status === 'error') {
+				alert(result.error);
+			}
+		}
+
+		let tfl = document.getElementById('tfl');
+
+		let tweetsinnerhtml = '';
+		let followsinnerhtml = '';
+		let likedinnerhtml = '';
+
+		let follows = JSON.parse('<%-JSON.stringify(follows)%>');
+		for(let f of follows) {
+			followsinnerhtml += '<div class="whitebody"><a class="griditem" href="/user/' + f.username + '">@' + f.username + '</a></div>';
+		}
+
+		let liked = JSON.parse('<%-JSON.stringify(liked)%>');
+		for(let l of liked) {
+			likedinnerhtml += '<div class="whitebody"><a class="griditem" href="/user/' + l.author + '">@' + l.author + '</a><a class="griditem" href="/tweet/' + l._id + '">' + l.text + '</a><div class="griditem">Likes: ' + l.likes + ' Replies: ' + l.replies + '</div></div>';
+		}
+
+		function seetweets() {
+			tfl.innerHTML = tweetsinnerhtml;
+			
+			load = document.getElementById('loadmore');
+
+			load.addEventListener('click', fetchtweeeet);
+		}
+
+		function seefollows() {
+			tfl.innerHTML = followsinnerhtml;
+		}
+
+		function seeliked() {
+			tfl.innerHTML = likedinnerhtml;
+		}
+
+		if('<%=username%>' === '<%=userid%>') {
+			const bars = document.getElementById('bars');
+			bars.innerHTML = '<input class="griditem" id="seetweet" type="submit" value="Tweeeets" onclick="seetweets();"/><input class="griditem" id="seefollow" type="submit" value="Follows" onclick="seefollows();"/><input class="griditem" id="seelike" type="submit" value="Liked" onclick="seeliked();"/>';
+		}
+  	</script>
+</body>
+</html>
